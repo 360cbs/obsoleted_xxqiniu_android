@@ -13,8 +13,8 @@ public class Main {
         String sputPolicy = "{\"scope\":\"my-bucket:sunflower.jpg\",\"deadline\":1451491200,\"returnBody\":\"{\"name\":$(fname),\"size\":$(fsize),\"w\":$(imageInfo.width),\"h\":$(imageInfo.height),\"hash\":$(etag)}\"}";
         byte[] bputPolicy = sputPolicy.getBytes(Charset.forName("utf-8"));
         bputPolicy = F.base64Encode(bputPolicy, Base64.URL_SAFE);
-        String encodedPolicy = F.bytes2String(bputPolicy);
-        System.out.println(encodedPolicy);
+//        String encodedPolicy = F.bytes2String(bputPolicy);
+//        System.out.println(encodedPolicy);
 //        byte[] bencodedSign = F.hmacSHA1(bputPolicy, secretKey.getBytes(Charset.forName("utf-8")));
 //        bencodedSign = F.base64Encode(bencodedSign, Base64.URL_SAFE);
 //        String sencodedSign = F.bytes2String(bencodedSign);
