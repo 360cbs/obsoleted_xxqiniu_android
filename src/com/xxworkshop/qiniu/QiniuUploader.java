@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Base64;
 import com.qiniu.io.IO;
@@ -44,14 +46,7 @@ public final class QiniuUploader {
         }
 
         if (bitmap != null) {
-            try {
-                OutputStream os = context.getContentResolver().openOutputStream(tempImagePath);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
-                IO.putFile(context, token, key, tempImagePath, new PutExtra(), listener);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                listener.onFailure(e);
-            }
+            new UploadThread(bitmap, key, token, listener).start();
         } else {
             listener.onFailure(new NullPointerException());
         }
@@ -81,6 +76,62 @@ public final class QiniuUploader {
         } catch (JSONException e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    private class UploadThread extends Thread {
+        private Bitmap mbitmap;
+        private String mkey;
+        private String mtoken;
+        private MessageHandler messageHandler = new MessageHandler();
+        private QiniuUploaderListener mlistener;
+
+        public UploadThread(Bitmap bitmap, String key, String token, QiniuUploaderListener listener) {
+            this.mbitmap = bitmap;
+            this.mkey = key;
+            this.mtoken = token;
+            this.mlistener = listener;
+        }
+
+        @Override
+        public void run() {
+            try {
+                OutputStream os = context.getContentResolver().openOutputStream(tempImagePath);
+                mbitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+                IO.putFile(context, mtoken, mkey, tempImagePath, new PutExtra(), new QiniuUploaderListener() {
+                    @Override
+                    public void onSuccess(JSONObject obj) {
+                        Message msg = Message.obtain();
+                        msg.what = 1;
+                        msg.obj = obj;
+                        messageHandler.sendMessage(msg);
+                    }
+
+                    @Override
+                    public void onFailure(Exception ex) {
+                        Message msg = Message.obtain();
+                        msg.what = 0;
+                        msg.obj = ex;
+                        messageHandler.sendMessage(msg);
+                    }
+                });
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                mlistener.onFailure(e);
+            }
+        }
+
+        private class MessageHandler extends Handler {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == 1) {
+                    JSONObject obj = (JSONObject) msg.obj;
+                    mlistener.onSuccess(obj);
+                } else {
+                    Exception ex = (Exception) msg.obj;
+                    mlistener.onFailure(ex);
+                }
+            }
         }
     }
 }
