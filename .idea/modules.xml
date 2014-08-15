@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/xxqiniu_android.iml" filepath="$PROJECT_DIR$/xxqiniu_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../xxworkshop_android/xxworkshop_android.iml" filepath="$PROJECT_DIR$/../xxworkshop_android/xxworkshop_android.iml" />
+    </modules>
+  </component>
+</project>
+
